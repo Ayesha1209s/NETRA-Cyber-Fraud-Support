@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const errorHandler = require('./middlewares/errorHandler.middleware');
 const authRoutes = require('./routes/auth.routes'); // 1. Import auth routes
+const complaintRoutes = require('./routes/complaint.routes'); // 1. Import it here
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ connectDB();
 
 // 2. Mount auth API endpoints
 app.use('/api/auth', authRoutes);
+app.use('/api/complaints', complaintRoutes); // 3. Mount it here
 
 app.get('/', (req, res) => {
   res.send('NETRA API is running smoothly...');
