@@ -12,11 +12,15 @@ const app = express();
 
 app.use(express.json());
 
+// 🌟 NEW: Expose the local uploads folder as a public static asset directory
+app.use('/uploads', express.static('uploads'));
+
 connectDB();
 
 // 2. Mount auth API endpoints
 app.use('/api/auth', authRoutes);
 app.use('/api/complaints', complaintRoutes); // 3. Mount it here
+
 
 app.get('/', (req, res) => {
   res.send('NETRA API is running smoothly...');

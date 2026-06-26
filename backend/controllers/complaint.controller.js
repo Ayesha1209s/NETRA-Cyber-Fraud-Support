@@ -70,8 +70,53 @@ const processFreezeRequest = async (req, res, next) => {
   }
 };
 
+// Add this to the bottom of backend/controllers/complaint.controller.js
+const Complaint = require('../models/Complaint'); // Make sure Complaint model is imported at top
+
+const uploadEvidence = async (req, res, next) => {
+  try {
+    const { caseId } = req.body;
+
+    if (!caseId) {
+      const error = new Error('Please provide a valid caseId with your evidence file');
+      error.status = 400;
+      throw error;
+    }
+
+    if (!req.file) {
+      const error = new Error('No evidence file attachment found in request form-data');
+      error.status = 400;
+      throw error;
+    }
+
+    // Find the target complaint case record
+    const complaint = await Complaint.findOne({ caseId });
+    if (!complaint) {
+      const error = new Error('Complaint case file not found');
+      error.status = 404;
+      throw error;
+    }
+
+    // Generate a localized static server link for the evidence file
+    const fileUrl = `/uploads/${req.file.filename}`;
+    
+    // Add the new file link to our existing database array
+    complaint.evidenceUrls.push(fileUrl);
+    await complaint.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Evidence screenshot uploaded and linked to cyber case tracking logs successfully.',
+      evidenceUrls: complaint.evidenceUrls,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   fileComplaint,
   getPoliceQueue,
-  processFreezeRequest, // Export it!
+  processFreezeRequest,
+  uploadEvidence, // Export it!
 };
