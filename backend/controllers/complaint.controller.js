@@ -20,6 +20,58 @@ const fileComplaint = async (req, res, next) => {
   }
 };
 
+
+// 🌟 NEW: Get all complaints for the police officer's queue
+const getPoliceQueue = async (req, res, next) => {
+  try {
+    // Extract the officer's district from their JWT-decoded profile object
+    const district = req.user.roleDetails?.jurisdiction?.district;
+    
+    const cases = await complaintService.getPoliceDashboardQueue(district);
+
+    res.status(200).json({
+      success: true,
+      count: cases.length,
+      message: `Active cyber fraud incident queue retrieved for district: ${district || 'All'}`,
+      data: cases,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Add this to backend/controllers/complaint.controller.js
+
+const processFreezeRequest = async (req, res, next) => {
+  try {
+    const { caseId, transactionId, remarks } = req.body;
+
+    if (!caseId || !transactionId) {
+      const error = new Error('Missing caseId or transactionId parameters');
+      error.status = 400;
+      throw error;
+    }
+
+    // Call service layer passing the actioning officer's ID from their JWT token
+    const updatedComplaint = await complaintService.requestTransactionFreeze(
+      caseId,
+      transactionId,
+      req.user._id,
+      remarks
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Bank formal freeze notification logged and timeline tracking updated.',
+      data: updatedComplaint,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   fileComplaint,
+  getPoliceQueue,
+  processFreezeRequest, // Export it!
 };
